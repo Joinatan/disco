@@ -1,7 +1,7 @@
-let t1 = 0.03; // attack time in seconds
-let l1 = 0.7; // attack level 0.0 to 1.0
-let t2 = 0.3; // decay time in seconds
-let l2 = 0.1; // decay level  0.0 to 1.0
+// let t1 = 0.03; // attack time in seconds
+// let l1 = 0.7; // attack level 0.0 to 1.0
+// let t2 = 0.3; // decay time in seconds
+// let l2 = 0.1; // decay level  0.0 to 1.0
 
 export default class Music {
     constructor(osc, level, freq, atk, rel) 
@@ -31,13 +31,15 @@ export default class Music {
     }
     setup() {
         this.osc.start();
+        this.osc.amp(0);
     }
 
     playSound(freqi, cutoff) {
         // this.osc.amp(0.1)
         // this.osc.start();
-        if(!filter){this.filter.freq(4000)}
+        if(cutoff == NaN){this.filter.freq(4000)}
         this.filter.freq(cutoff)
+        this.osc.amp(0.1)
         this.env.play(this.osc.freq(freqi));
         return this;
     }

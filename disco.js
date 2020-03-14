@@ -1,11 +1,13 @@
-// const GameTimer = require('game-timer');
+// import {countDown} from './countDown.js'
 import {frame} from './frame.js'
+import {showBeats} from './beats.js'
 import {createDanceMan} from './createDanceMan.js'
 import {Entity, Light} from './entity.js'
 import Music from './music.js'
 import { playSound1} from './music.js'
 import {showSteps} from './steps.js'
 
+const score = document.getElementById('score');
 const canvas = document.getElementById('screen');
 const context = canvas.getContext('2d');
 
@@ -13,7 +15,7 @@ const bpm = 1200 / 4;
 
 const scale = 10;
 
-const difficulty = 2270;
+const difficulty = 500;
 
 context.scale(scale, scale);
 const offset = {x: ((canvas.width - 5 * scale) / 2) / scale, y: (canvas.height - (6 * scale))/ scale }
@@ -23,6 +25,7 @@ const offsetArrow = {x: ((canvas.width + -25 * scale) / 2) / scale, y: 15}
 const offsetArrow2 = {x: ((canvas.width + -5 * scale) / 2) / scale, y: 15}
 const offsetArrow3 = {x: ((canvas.width + 15 * scale) / 2) / scale, y: 15}
 const offsetFrame = {x: ((canvas.width + -16 * scale) / 2) / scale, y: 14}
+const offsetBeat = {x: ((canvas.width + -36 * scale) / 2) / scale, y: 1}
 
 let datorn = 'stand';
 
@@ -34,6 +37,53 @@ let stepInput = 'stand';
 let cpuArrow = 'stand'
 let cpu = 'stand'
 
+//----------updatescore
+function updateScore(points){
+    score.innerHTML = 'SCORE: ' + points
+}
+
+//--countdown
+
+function countDown(res){
+    drawDisco()
+    setTimeout(four, 1000)
+    setTimeout(three, 2000)
+    setTimeout(two, 3000)
+    setTimeout(one, 4000)
+    // zero().then((res) => {console.log(res);  return res})
+    // zero().then((res) => {})
+    setTimeout(zero, 5000)
+}
+
+function four(nr){
+    drawDisco()
+    playError.playSound(350, 5000).releaseSound(0.1)
+    beat.drawEntity(showBeats(4))
+    console.log(4)
+
+}
+function three(nr){
+    drawDisco()
+    beat.drawEntity(showBeats(3))
+    playError.playSound(350, 5000).releaseSound(0.1)
+    console.log(3)
+
+}
+function two(nr){
+    drawDisco()
+    beat.drawEntity(showBeats(2))
+    playError.playSound(350, 5000).releaseSound(0.1)
+}
+function one(nr){
+    drawDisco()
+    beat.drawEntity(showBeats(1))
+    playError.playSound(350, 5000).releaseSound(0.1)
+}
+
+function zero(){
+    playError.playSound(350, 5000).releaseSound(0.1)
+    callback(time)
+}
 
 
 
@@ -48,6 +98,7 @@ const rightStepFrame = new Entity(canvas, context,  offsetFrame);
 const discoLight = new Light(canvas, context, {x: 1, y:1}, scale)
 const discoLight2 = new Light(canvas, context, {x: 1, y:1}, scale)
 const discoLight3 = new Light(canvas, context, {x: 1, y:1}, scale)
+const beat = new Entity(canvas, context, offsetBeat)
 
 //------------musik
 let sine = 'sine'
@@ -146,6 +197,8 @@ let partCheck2 = 0;
 let part = partsArray[0];
 let stepIndex = 0;
 let moveArrow = 0;
+let currentBeat = 1;
+
 
 arp.setup()
 arpHarmony.setup()
@@ -212,6 +265,8 @@ function update(time){
             console.log('ny del')
             partCheck1 = 0;
         }
+        if(currentBeat === 4){currentBeat = 0}
+        currentBeat += 1
 
         // cpu = cpuArrow;
 
@@ -221,7 +276,7 @@ function update(time){
         discoLight2.lightRandomPosition();
     }
 
-    if(accumulator5 > bpm/2.2){
+    if(accumulator5 > bpm/2.3){
         accumulator5 = 0;
         stepIndex += 1;
         millisSeconds = Date.now() - date
@@ -232,8 +287,7 @@ function update(time){
         accumulator5 = 0;
         discoLight.lightRandomPosition();
         deltaTime = 0;
-        testTiming = time;
-        console.log(stepArray[stepIndex])
+        // console.log(stepArray[stepIndex])
     }
 
     // lastTime = time;
@@ -255,6 +309,7 @@ function drawEveryThing(){
     mainDanceMan.drawEntity(createDanceMan(stepInput))
     rightStepFrame.drawEntity(frame())
     drawArrows(stepArray, pos)
+    beat.drawEntity(showBeats(currentBeat))
 };
 
 let lastTime2;
@@ -273,36 +328,41 @@ const callback = (millis) => {
     requestAnimationFrame(callback);
 }
 
-callback(time)
+
+
+countDown()
 
 let date = Date.now()
 let millisSeconds = Date.now() - date;
-// update(time);
+let points = 0;
 
-// playError.setup();
+playError.setup();
 // playGood.setup();
 document.addEventListener('keydown', (event) => {
     event.preventDefault();
-    console.log(stepInput, stepArray[stepIndex])
-    if(event.timeStamp < testTiming + difficulty &&
-        event.timeStamp > testTiming - difficulty &&
-        stepInput == stepArray[stepIndex]) {console.log('bra')
-        // playGood.playSound().releaseSound();
-    }else {
-        console.log('dåligt')
-        // playError.playSound(350).releaseSound(0.1);
-
-    }
     if(event.keyCode === 38) {
         stepInput = 'stand'
     }
     if(event.keyCode === 39){
-        stepInput = 'two'
+        stepInput = 'three'
     }
     if(event.keyCode === 37){
-        stepInput = 'three'
+        stepInput = 'two'
     }
     if(event.keyCode === 40){
         stepInput = 'down'
     }
+    if(event.timeStamp < testTiming + difficulty  &&
+        event.timeStamp > testTiming - (difficulty * 1.2)  &&
+        stepInput == stepArray[stepIndex]) {console.log('bra')
+        points += 1
+        // playGood.playSound().releaseSound();
+    } else {
+        console.log('dåligt')
+        playError.playSound(350, 5000).releaseSound(0.1)
+        points -= 1
+
+    }
+    console.log('POINTS: ', points)
+    updateScore(points)
 })
